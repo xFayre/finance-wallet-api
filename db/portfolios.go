@@ -4,6 +4,8 @@
 package db
 
 import (
+	"reflect"
+
 	"github.com/mfinancecombr/finance-wallet-api/financeapi"
 	"github.com/mfinancecombr/finance-wallet-api/wallet"
 	log "github.com/sirupsen/logrus"
@@ -68,7 +70,7 @@ func contains(s []interface{}, e interface{}) bool {
 	return false
 }
 
-func (m *mongoSession) getPortfolioItem(itemType string, year int) (map[string]wallet.PortfolioItem, error) {
+func (m *mongoSession) getPortfolioItem(itemType string, item wallet.Tradable, year int) (map[string]wallet.PortfolioItem, error) {
 	log.Debugf("[DB] Getting portfolio item %s", itemType)
 	operationsSymbols, err := m.getOperationsSymbols(bson.M{"itemType": itemType})
 	if err != nil {
@@ -84,15 +86,24 @@ func (m *mongoSession) getPortfolioItem(itemType string, year int) (map[string]w
 			log.Errorf("Error on get stock item: %s", err)
 		}
 
-		operations, err := m.getAllOperationsBySymbol(symbol, itemType, year)
+		operations, err := m.getAllOperationsBySymbol(symbol, year)
 		if err != nil {
 			return nil, err
 		}
 
+		typeOfitem := reflect.TypeOf(item)
+		operationsList := wallet.OperationsList{}
+		for _, result := range operations {
+			newItem := reflect.New(typeOfitem).Interface().(wallet.Tradable)
+			bsonBytes, _ := bson.Marshal(result)
+			bson.Unmarshal(bsonBytes, newItem)
+			operationsList = append(operationsList, newItem)
+		}
+
 		// FIXME
 		broker := ""
-		if len(operations) > 0 {
-			operation := operations[0]
+		if len(operationsList) > 0 {
+			operation := operationsList[0]
 			if operation != nil {
 				broker = operation.GetBrokerID()
 			}
@@ -100,7 +111,7 @@ func (m *mongoSession) getPortfolioItem(itemType string, year int) (map[string]w
 
 		portfolioItem.BrokerID = broker
 		portfolioItem.ItemType = itemType
-		portfolioItem.Operations = operations
+		portfolioItem.Operations = operationsList
 		portfolioItem.Recalculate()
 		items[symbol] = *portfolioItem
 	}
@@ -112,18 +123,19 @@ func (m *mongoSession) getPortfolioItem(itemType string, year int) (map[string]w
 func (m *mongoSession) GetPortfolioItems(portfolio *wallet.Portfolio, year int) error {
 	log.Debug("[DB] GetPortfolioItems")
 
-	slugs := []string{
-		"certificates-of-deposit",
-		"ficfi",
-		"fiis",
-		"stocks",
-		"stocks-funds",
-		"treasuries-direct",
+	// FIXME
+	slugs := map[string]wallet.Tradable{
+		"certificates-of-deposit": wallet.CertificateOfDeposit{},
+		"ficfi":                   wallet.FICFI{},
+		"fiis":                    wallet.FII{},
+		"stocks":                  wallet.Stock{},
+		"stocks-funds":            wallet.StockFund{},
+		"treasuries-direct":       wallet.TreasuryDirect{},
 	}
 
 	portfolio.Items = map[string]wallet.PortfolioItem{}
-	for _, slug := range slugs {
-		stocks, err := m.getPortfolioItem(slug, year)
+	for slug, item := range slugs {
+		stocks, err := m.getPortfolioItem(slug, item, year)
 		if err != nil {
 			log.Errorf("[DB] Error on get portfolio items: %v", err)
 			continue
