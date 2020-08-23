@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
@@ -192,4 +193,33 @@ func (s *server) portfoliosUpdate(c echo.Context) error {
 
 	errMsg := fmt.Sprintf("Portfolio '%s' not found", id)
 	return c.JSON(http.StatusNotFound, errorMessage(errMsg))
+}
+
+// portfoliosUpdate godoc
+// @Summary Update portfolio data by ID
+// @Description Update some portfolio by id
+// @Accept json
+// @Produce json
+// @Success 200 {object} wallet.PortfolioItem
+// @Failure 404 {object} api.ErrorMessage
+// @Failure 422 {object} api.ErrorMessage
+// @Failure 500 {object} api.ErrorMessage
+// @Router /portfolios/{id}/{itemType}/{symbol} [get]
+// @Param id path string true "Portfolio id"
+// @Param itemType path string true "Type of item"
+// @Param symbol path string true "Item Symbol"
+func (s *server) portfolioItemPosition(c echo.Context) error {
+	id := c.Param("id")
+	itemType := c.Param("itemType")
+	// FIXME
+	symbol := strings.ToUpper(c.Param("symbol"))
+	log.Debugf("Getting %s data for %s", id, symbol)
+
+	result, err := s.db.GetPositionBySymbol(itemType, symbol)
+	if err != nil {
+		errMsg := fmt.Sprintf("Error on update portfolio: %v", err)
+		return logAndReturnError(c, errMsg)
+	}
+
+	return c.JSON(http.StatusOK, result)
 }

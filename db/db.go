@@ -68,6 +68,8 @@ type DB interface {
 	InsertPortfolio(d interface{}) (*mongo.InsertOneResult, error)
 	UpdatePortfolio(id string, d interface{}) (*mongo.UpdateResult, error)
 
+	GetPositionBySymbol(itemType, symbol string) (*wallet.PortfolioItem, error)
+
 	GetAllOperations() (interface{}, error)
 	DeleteOperationByID(id string) (*mongo.DeleteResult, error)
 	GetAllPurchases() (interface{}, error)

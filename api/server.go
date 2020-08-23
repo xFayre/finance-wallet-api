@@ -98,6 +98,7 @@ func NewServerFromDB() (Server, error) {
 	echoInstance.DELETE("/api/v1/portfolios/:id", server.portfoliosDelete)
 	echoInstance.GET("/api/v1/portfolios", server.portfolios)
 	echoInstance.GET("/api/v1/portfolios/:id", server.portfolio)
+	echoInstance.GET("/api/v1/portfolios/:id/:itemType/:symbol", server.portfolioItemPosition)
 	echoInstance.POST("/api/v1/portfolios", server.portfoliosAdd)
 	echoInstance.PUT("/api/v1/portfolios/:id", server.portfoliosUpdate)
 

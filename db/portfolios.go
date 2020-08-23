@@ -4,6 +4,8 @@
 package db
 
 import (
+	"reflect"
+
 	"github.com/mfinancecombr/finance-wallet-api/financeapi"
 	"github.com/mfinancecombr/finance-wallet-api/wallet"
 	log "github.com/sirupsen/logrus"
@@ -136,4 +138,29 @@ func (m *mongoSession) GetPortfolioItems(portfolio *wallet.Portfolio, year int) 
 	portfolio.Recalculate()
 
 	return nil
+}
+
+func (m *mongoSession) GetPositionBySymbol(itemType, symbol string) (*wallet.PortfolioItem, error) {
+	log.Debugf("[DB] getSymbolPositions")
+	operations, err := m.getOperationsBySymbol(symbol)
+	if err != nil {
+		return nil, err
+	}
+
+	item := wallet.Registry[itemType]
+	typeOfitem := reflect.TypeOf(item)
+	operationsList := wallet.OperationsList{}
+	for _, result := range operations {
+		operation := reflect.New(typeOfitem).Interface().(wallet.Tradable)
+		bsonBytes, _ := bson.Marshal(result)
+		bson.Unmarshal(bsonBytes, operation)
+		operationsList = append(operationsList, operation)
+	}
+
+	portfolioItem := &wallet.PortfolioItem{}
+	portfolioItem.ItemType = itemType
+	portfolioItem.Operations = operationsList
+	portfolioItem.Recalculate()
+
+	return portfolioItem, nil
 }

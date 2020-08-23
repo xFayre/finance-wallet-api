@@ -10,3 +10,12 @@ type Tradable interface {
 	GetType() string
 	GetBrokerID() string
 }
+
+var Registry = map[string]Tradable{
+	"certificates-of-deposit": CertificateOfDeposit{},
+	"ficfi":                   FICFI{},
+	"fiis":                    FII{},
+	"stocks":                  Stock{},
+	"stocks-funds":            StockFund{},
+	"treasuries-direct":       TreasuryDirect{},
+}

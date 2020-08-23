@@ -113,3 +113,10 @@ func (m *mongoSession) getOperationByID(c, id string, h wallet.Tradable) error {
 	}
 	return nil
 }
+
+func (m *mongoSession) getOperationsBySymbol(symbol string) ([]bson.M, error) {
+	log.Debug("[DB] getAllOperationsBySymbol")
+	query := bson.M{"symbol": symbol}
+	opts := options.Find().SetSort(bson.D{{"date", 1}})
+	return m.collection.FindAll(operationsCollection, query, opts)
+}
