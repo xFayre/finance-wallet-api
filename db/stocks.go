@@ -7,19 +7,7 @@ import (
 	"github.com/mfinancecombr/finance-wallet-api/wallet"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
-
-func (m *mongoSession) InsertStockOperation(d *wallet.Stock) (*mongo.InsertOneResult, error) {
-	log.Debug("[DB] InsertStockOperation")
-	return m.insertOperation(d)
-}
-
-func (m *mongoSession) UpdateStockOperationByID(id string, d *wallet.Stock) (*mongo.UpdateResult, error) {
-	log.Debug("[DB] UpdateStockOperationByID")
-	d.ID = ""
-	return m.updateOperation(operationsCollection, id, d)
-}
 
 func (m *mongoSession) GetAllStocksOperations() (wallet.StockList, error) {
 	log.Debug("[DB] GetAllStocksOperations")

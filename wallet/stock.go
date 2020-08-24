@@ -45,3 +45,7 @@ func (s Stock) GetType() string {
 func (s Stock) GetBrokerID() string {
 	return s.BrokerID
 }
+
+func (s Stock) GetCollectionName() string {
+	return "operations"
+}

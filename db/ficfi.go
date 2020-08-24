@@ -7,19 +7,7 @@ import (
 	"github.com/mfinancecombr/finance-wallet-api/wallet"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
-
-func (m *mongoSession) InsertFICFIOperation(d *wallet.FICFI) (*mongo.InsertOneResult, error) {
-	log.Debug("[DB] InsertFICFIOperation")
-	return m.insertOperation(d)
-}
-
-func (m *mongoSession) UpdateFICFIOperationByID(id string, d *wallet.FICFI) (*mongo.UpdateResult, error) {
-	log.Debug("[DB] UpdateFICFIOperationByID")
-	d.ID = ""
-	return m.updateOperation(operationsCollection, id, d)
-}
 
 func (m *mongoSession) GetAllFICFIOperations() (wallet.FICFIList, error) {
 	log.Debug("[DB] GetAllFICFIOperations")

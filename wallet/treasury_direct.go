@@ -47,3 +47,7 @@ func (s TreasuryDirect) GetType() string {
 func (s TreasuryDirect) GetBrokerID() string {
 	return s.BrokerID
 }
+
+func (s TreasuryDirect) GetCollectionName() string {
+	return "operations"
+}

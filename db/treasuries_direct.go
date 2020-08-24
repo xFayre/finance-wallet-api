@@ -7,19 +7,7 @@ import (
 	"github.com/mfinancecombr/finance-wallet-api/wallet"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
-
-func (m *mongoSession) InsertTreasuryDirectOperation(d *wallet.TreasuryDirect) (*mongo.InsertOneResult, error) {
-	log.Debug("[DB] InsertTreasuryDirectOperation")
-	return m.insertOperation(d)
-}
-
-func (m *mongoSession) UpdateTreasuryDirectOperationByID(id string, d *wallet.TreasuryDirect) (*mongo.UpdateResult, error) {
-	log.Debug("[DB] UpdateTreasuryDirectOperationByID")
-	d.ID = ""
-	return m.updateOperation(operationsCollection, id, d)
-}
 
 func (m *mongoSession) GetAllTreasuriesDirectsOperations() (wallet.TreasuryDirectList, error) {
 	log.Debug("[DB] GetAllTreasuriesDirectsOperations")

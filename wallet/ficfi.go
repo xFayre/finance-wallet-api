@@ -45,3 +45,7 @@ func (s FICFI) GetType() string {
 func (s FICFI) GetBrokerID() string {
 	return s.BrokerID
 }
+
+func (s FICFI) GetCollectionName() string {
+	return "operations"
+}

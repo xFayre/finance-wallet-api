@@ -7,19 +7,7 @@ import (
 	"github.com/mfinancecombr/finance-wallet-api/wallet"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
-
-func (m *mongoSession) InsertCertificateOfDepositOperation(d *wallet.CertificateOfDeposit) (*mongo.InsertOneResult, error) {
-	log.Debug("[DB] InsertCertificateOfDepositOperation")
-	return m.insertOperation(d)
-}
-
-func (m *mongoSession) UpdateCertificateOfDepositOperationByID(id string, d *wallet.CertificateOfDeposit) (*mongo.UpdateResult, error) {
-	log.Debug("[DB] UpdateCertificateOfDepositOperationByID")
-	d.ID = ""
-	return m.updateOperation(operationsCollection, id, d)
-}
 
 func (m *mongoSession) GetAllCertificatesOfDepositsOperations() (wallet.CertificateOfDepositList, error) {
 	log.Debug("[DB] GetAllCertificatesOfDepositsOperations")

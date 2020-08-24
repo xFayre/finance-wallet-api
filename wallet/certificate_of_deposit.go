@@ -47,3 +47,7 @@ func (s CertificateOfDeposit) GetType() string {
 func (s CertificateOfDeposit) GetBrokerID() string {
 	return s.BrokerID
 }
+
+func (s CertificateOfDeposit) GetCollectionName() string {
+	return "operations"
+}

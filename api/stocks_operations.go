@@ -71,7 +71,7 @@ func (s *server) insertStockOperation(c echo.Context) error {
 		return c.JSON(http.StatusUnprocessableEntity, errorMessage(errMsg))
 	}
 
-	result, err := s.db.InsertStockOperation(data)
+	result, err := s.db.Create(data)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error on insert stock: %v", err)
 		return logAndReturnError(c, errMsg)
@@ -106,7 +106,7 @@ func (s *server) updateStockOperationByID(c echo.Context) error {
 		return c.JSON(http.StatusUnprocessableEntity, errorMessage(errMsg))
 	}
 
-	result, err := s.db.UpdateStockOperationByID(id, data)
+	result, err := s.db.Update(id, data)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error on update stock: %v", err)
 		return logAndReturnError(c, errMsg)
