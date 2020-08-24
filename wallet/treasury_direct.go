@@ -24,8 +24,10 @@ type TreasuryDirect struct {
 
 type TreasuryDirectList []TreasuryDirect
 
+const TreasuryDirectItemType = "treasury-direct"
+
 func NewTreasuryDirect() *TreasuryDirect {
-	return &TreasuryDirect{ItemType: "treasury-direct"}
+	return &TreasuryDirect{ItemType: TreasuryDirectItemType}
 }
 
 func (s TreasuryDirect) GetPrice() float64 {
@@ -46,4 +48,12 @@ func (s TreasuryDirect) GetType() string {
 
 func (s TreasuryDirect) GetBrokerID() string {
 	return s.BrokerID
+}
+
+func (s TreasuryDirect) GetCollectionName() string {
+	return "operations"
+}
+
+func (s TreasuryDirect) GetItemType() string {
+	return TreasuryDirectItemType
 }

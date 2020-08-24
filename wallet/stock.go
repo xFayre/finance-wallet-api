@@ -22,8 +22,10 @@ type Stock struct {
 
 type StockList []Stock
 
+const StockItemType = "stocks"
+
 func NewStock() *Stock {
-	return &Stock{ItemType: "stocks"}
+	return &Stock{ItemType: StockItemType}
 }
 
 func (s Stock) GetPrice() float64 {
@@ -44,4 +46,12 @@ func (s Stock) GetType() string {
 
 func (s Stock) GetBrokerID() string {
 	return s.BrokerID
+}
+
+func (s Stock) GetCollectionName() string {
+	return "operations"
+}
+
+func (s Stock) GetItemType() string {
+	return StockItemType
 }

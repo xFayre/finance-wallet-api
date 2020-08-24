@@ -22,8 +22,10 @@ type StockFund struct {
 
 type StockFundList []StockFund
 
+const StockFundItemType = "stocks-funds"
+
 func NewStockFund() *StockFund {
-	return &StockFund{ItemType: "stocks-funds"}
+	return &StockFund{ItemType: StockFundItemType}
 }
 
 func (s StockFund) GetPrice() float64 {
@@ -44,4 +46,12 @@ func (s StockFund) GetType() string {
 
 func (s StockFund) GetBrokerID() string {
 	return s.BrokerID
+}
+
+func (s StockFund) GetCollectionName() string {
+	return "operations"
+}
+
+func (s StockFund) GetItemType() string {
+	return StockFundItemType
 }

@@ -5,15 +5,19 @@ package db
 
 import (
 	"context"
+	"reflect"
 	"time"
 
 	"github.com/mfinancecombr/finance-wallet-api/wallet"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// FIXME
 const (
 	brokersCollection    = "brokers"
 	portfoliosCollection = "portfolios"
@@ -25,55 +29,72 @@ type mongoSession struct {
 }
 
 type DB interface {
-	GetAllStocksOperations() (wallet.StockList, error)
-	GetStockOperationByID(id string) (*wallet.Stock, error)
-	InsertStockOperation(d *wallet.Stock) (*mongo.InsertOneResult, error)
-	UpdateStockOperationByID(id string, d *wallet.Stock) (*mongo.UpdateResult, error)
+	Create(d wallet.Queryable) (*mongo.InsertOneResult, error)
+	Delete(collectionName, id string) (*mongo.DeleteResult, error)
+	Get(id string, d wallet.Queryable) error
+	GetAll(i wallet.Queryable) ([]wallet.Queryable, error)
+	Update(id string, d wallet.Queryable) (*mongo.UpdateResult, error)
 
-	GetAllFIIsOperations() (wallet.FIIList, error)
-	GetFIIOperationByID(id string) (*wallet.FII, error)
-	InsertFIIOperation(d *wallet.FII) (*mongo.InsertOneResult, error)
-	UpdateFIIOperationByID(id string, d *wallet.FII) (*mongo.UpdateResult, error)
-
-	GetAllTreasuriesDirectsOperations() (wallet.TreasuryDirectList, error)
-	GetTreasuryDirectOperationByID(id string) (*wallet.TreasuryDirect, error)
-	InsertTreasuryDirectOperation(d *wallet.TreasuryDirect) (*mongo.InsertOneResult, error)
-	UpdateTreasuryDirectOperationByID(id string, d *wallet.TreasuryDirect) (*mongo.UpdateResult, error)
-
-	GetAllCertificatesOfDepositsOperations() (wallet.CertificateOfDepositList, error)
-	GetCertificateOfDepositOperationByID(id string) (*wallet.CertificateOfDeposit, error)
-	InsertCertificateOfDepositOperation(d *wallet.CertificateOfDeposit) (*mongo.InsertOneResult, error)
-	UpdateCertificateOfDepositOperationByID(id string, d *wallet.CertificateOfDeposit) (*mongo.UpdateResult, error)
-
-	GetAllStocksFundsOperations() (wallet.StockFundList, error)
-	GetStockFundOperationByID(id string) (*wallet.StockFund, error)
-	InsertStockFundOperation(d *wallet.StockFund) (*mongo.InsertOneResult, error)
-	UpdateStockFundOperationByID(id string, d *wallet.StockFund) (*mongo.UpdateResult, error)
-
-	GetAllFICFIOperations() (wallet.FICFIList, error)
-	GetFICFIOperationByID(id string) (*wallet.FICFI, error)
-	InsertFICFIOperation(d *wallet.FICFI) (*mongo.InsertOneResult, error)
-	UpdateFICFIOperationByID(id string, d *wallet.FICFI) (*mongo.UpdateResult, error)
-
-	DeleteBrokerByID(id string) (*mongo.DeleteResult, error)
-	GetAllBrokers() (*wallet.BrokersList, error)
-	GetBrokerByID(id string) (*wallet.Broker, error)
-	InsertBroker(d interface{}) (*mongo.InsertOneResult, error)
-	UpdateBroker(id string, d interface{}) (*mongo.UpdateResult, error)
-
-	DeletePortfolioByID(id string) (*mongo.DeleteResult, error)
-	GetAllPortfolios() ([]wallet.Portfolio, error)
-	GetPortfolioByID(id string) (*wallet.Portfolio, error)
 	GetPortfolioItems(p *wallet.Portfolio, year int) error
-	InsertPortfolio(d interface{}) (*mongo.InsertOneResult, error)
-	UpdatePortfolio(id string, d interface{}) (*mongo.UpdateResult, error)
-
 	GetAllOperations() (interface{}, error)
-	DeleteOperationByID(id string) (*mongo.DeleteResult, error)
 	GetAllPurchases() (interface{}, error)
 	GetAllSales() (interface{}, error)
 
 	Ping() error
+}
+
+func (m *mongoSession) Get(id string, d wallet.Queryable) error {
+	log.Debug("[DB] Get")
+	query := bson.M{"_id": id}
+	return m.collection.FindOne(d.GetCollectionName(), query, d)
+}
+
+func (m *mongoSession) GetAll(d wallet.Queryable) ([]wallet.Queryable, error) {
+	log.Debug("[DB] GetAll")
+	query := bson.M{}
+	if d.GetItemType() != "" {
+		query = bson.M{"itemType": d.GetItemType()}
+	}
+	results, err := m.collection.FindAll(d.GetCollectionName(), query)
+	if err != nil {
+		return nil, err
+	}
+	typeOfitem := reflect.TypeOf(d)
+	operationsList := []wallet.Queryable{}
+	for _, result := range results {
+		operation := reflect.New(typeOfitem).Interface().(wallet.Queryable)
+		bsonBytes, _ := bson.Marshal(result)
+		bson.Unmarshal(bsonBytes, operation)
+		operationsList = append(operationsList, operation)
+	}
+	return operationsList, nil
+}
+
+func (m *mongoSession) Create(d wallet.Queryable) (*mongo.InsertOneResult, error) {
+	log.Debug("[DB] Create")
+	return m.collection.InsertOne(d.GetCollectionName(), d)
+}
+
+func (m *mongoSession) Update(id string, d wallet.Queryable) (*mongo.UpdateResult, error) {
+	log.Debug("[DB] Update")
+	// FIXME d.ID = ""
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	f := bson.D{{"_id", objectId}}
+	u := bson.D{{"$set", d}}
+	return m.collection.UpdateOne(d.GetCollectionName(), f, u)
+}
+
+func (m *mongoSession) Delete(collectionName, id string) (*mongo.DeleteResult, error) {
+	log.Debug("[DB] Delete")
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	q := bson.M{"_id": objectId}
+	return m.collection.DeleteOne(collectionName, q)
 }
 
 func newDBContext() (context.Context, context.CancelFunc) {

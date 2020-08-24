@@ -38,8 +38,8 @@ func (s *server) portfolio(c echo.Context) error {
 		year = 2020
 	}
 
-	result, err := s.db.GetPortfolioByID(id)
-	if err != nil {
+	result := &wallet.Portfolio{}
+	if err := s.db.Get(id, result); err != nil {
 		errMsg := fmt.Sprintf("Error on get portfolio '%s': %v", id, err)
 		return logAndReturnError(c, errMsg)
 	}
@@ -79,15 +79,16 @@ func (s *server) portfolios(c echo.Context) error {
 		year = 2020
 	}
 
-	allPortfolios, err := s.db.GetAllPortfolios()
+	allPortfolios, err := s.db.GetAll(wallet.Portfolio{})
 	if err != nil {
 		errMsg := fmt.Sprintf("Error on get all portfolios: %v", err)
 		return logAndReturnError(c, errMsg)
 	}
 
 	portfolios := make([]wallet.Portfolio, len(allPortfolios))
-	for idx, portfolio := range allPortfolios {
+	for idx, p := range allPortfolios {
 		// FIXME
+		portfolio := p.(wallet.Portfolio)
 		err := s.db.GetPortfolioItems(&portfolio, year)
 		if err != nil {
 			errMsg := fmt.Sprintf("Error on get portfolio items: %v", err)
@@ -117,14 +118,14 @@ func (s *server) portfoliosAdd(c echo.Context) error {
 		return logAndReturnError(c, errMsg)
 	}
 
-	portfolio.ID = slug.Make(portfolio.Name)
+	portfolio.Slug = slug.Make(portfolio.Name)
 
 	if err := c.Validate(portfolio); err != nil {
 		errMsg := fmt.Sprintf("Error on validate portfolio: %v", err)
 		return c.JSON(http.StatusUnprocessableEntity, errorMessage(errMsg))
 	}
 
-	result, err := s.db.InsertPortfolio(portfolio)
+	result, err := s.db.Create(portfolio)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error on insert portfolio: %v", err)
 		return logAndReturnError(c, errMsg)
@@ -146,7 +147,7 @@ func (s *server) portfoliosAdd(c echo.Context) error {
 func (s *server) portfoliosDelete(c echo.Context) error {
 	id := c.Param("id")
 	log.Debugf("Deleting %s data", id)
-	result, err := s.db.DeletePortfolioByID(id)
+	result, err := s.db.Delete("portfolios", id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error on delete portolio '%s': %v", id, err)
 		return logAndReturnError(c, errMsg)
@@ -180,7 +181,7 @@ func (s *server) portfoliosUpdate(c echo.Context) error {
 		return c.JSON(http.StatusUnprocessableEntity, errorMessage(errMsg))
 	}
 
-	result, err := s.db.UpdatePortfolio(id, portfolio)
+	result, err := s.db.Update(id, portfolio)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error on update portfolio: %v", err)
 		return logAndReturnError(c, errMsg)

@@ -22,8 +22,10 @@ type FII struct {
 
 type FIIList []FII
 
+const FIIItemType = "fiis"
+
 func NewFII() *FII {
-	return &FII{ItemType: "fiis"}
+	return &FII{ItemType: FIIItemType}
 }
 
 func (s FII) GetPrice() float64 {
@@ -44,4 +46,12 @@ func (s FII) GetType() string {
 
 func (s FII) GetBrokerID() string {
 	return s.BrokerID
+}
+
+func (s FII) GetCollectionName() string {
+	return "operations"
+}
+
+func (s FII) GetItemType() string {
+	return FIIItemType
 }

@@ -22,8 +22,10 @@ type FICFI struct {
 
 type FICFIList []FICFI
 
+const FICFIItemType = "ficfi"
+
 func NewFICFI() *FICFI {
-	return &FICFI{ItemType: "ficfi"}
+	return &FICFI{ItemType: FICFIItemType}
 }
 
 func (s FICFI) GetPrice() float64 {
@@ -44,4 +46,12 @@ func (s FICFI) GetType() string {
 
 func (s FICFI) GetBrokerID() string {
 	return s.BrokerID
+}
+
+func (s FICFI) GetCollectionName() string {
+	return "operations"
+}
+
+func (s FICFI) GetItemType() string {
+	return FICFIItemType
 }

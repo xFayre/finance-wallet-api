@@ -24,8 +24,10 @@ type CertificateOfDeposit struct {
 
 type CertificateOfDepositList []CertificateOfDeposit
 
+const CertificateOfDepositItemType = "certificate-of-deposit"
+
 func NewCertificateOfDeposit() *CertificateOfDeposit {
-	return &CertificateOfDeposit{ItemType: "certificate-of-deposit"}
+	return &CertificateOfDeposit{ItemType: CertificateOfDepositItemType}
 }
 
 func (s CertificateOfDeposit) GetPrice() float64 {
@@ -46,4 +48,12 @@ func (s CertificateOfDeposit) GetType() string {
 
 func (s CertificateOfDeposit) GetBrokerID() string {
 	return s.BrokerID
+}
+
+func (s CertificateOfDeposit) GetCollectionName() string {
+	return "operations"
+}
+
+func (s CertificateOfDeposit) GetItemType() string {
+	return CertificateOfDepositItemType
 }
